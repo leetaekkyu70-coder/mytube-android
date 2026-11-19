@@ -252,4 +252,57 @@
         alert("유효한 유튜브 영상 URL을 입력해 주세요.");
         return;
       }
-      selectVideo({ id: vid, title
+      selectVideo({ id: vid, title: `YouTube 영상 (${vid})`, channel: "URL 직접 열기", dur: "" });
+      if (action !== "play") await startDownload(action);
+    }
+
+    function updateProgressUI(percent, message, isError = false, isDone = false) {
+      const panel = document.getElementById("progress-panel");
+      const textEl = document.getElementById("progress-text");
+      const fillEl = document.getElementById("progress-fill");
+      panel.style.display = "block";
+      const safePct = Math.max(0, Math.min(100, Number(percent) || 0));
+      fillEl.style.width = `${safePct}%`;
+      fillEl.style.background = isError ? "#ef4444" : (isDone ? "#0d7a48" : "#10b981");
+      textEl.style.color = isError ? "#ef4444" : (isDone ? "var(--green)" : "var(--text)");
+      textEl.textContent = message;
+    }
+
+    async function startDownload(format) {
+      if (!activeVideo) return;
+      const plugin = window.Capacitor?.Plugins?.MediaDownloader;
+      const btns = document.querySelectorAll(".dl-btn");
+      btns.forEach(b => (b.disabled = true));
+      updateProgressUI(5, `[${format.toUpperCase()}] 다운로드 엔진 준비 중...`);
+
+      if (!plugin) {
+        updateProgressUI(0, "안드로이드 앱(Capacitor) 환경에서만 네이티브 저장이 실행됩니다.", true);
+        btns.forEach(b => (b.disabled = false));
+        return;
+      }
+
+      try {
+        const res = await plugin.download({
+          url: `https://www.youtube.com/watch?v=${activeVideo.id}`,
+          format
+        });
+        updateProgressUI(100, `저장 완료: ${res.folder}`, false, true);
+      } catch (err) {
+        updateProgressUI(0, `저장 실패: ${err.message || err}`, true);
+      } finally {
+        btns.forEach(b => (b.disabled = false));
+      }
+    }
+
+    if (window.Capacitor?.Plugins?.MediaDownloader) {
+      window.Capacitor.Plugins.MediaDownloader.addListener("downloadProgress", event => {
+        const pct = Number(event.progress) || 0;
+        updateProgressUI(pct, `${event.stage || "처리 중..."} (${pct.toFixed(1)}%)`);
+      });
+    }
+
+    updateBookmarkLabel();
+    renderFeed("all");
+  </script>
+</body>
+</html>
