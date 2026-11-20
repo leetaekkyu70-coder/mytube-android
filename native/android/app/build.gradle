@@ -1,0 +1,82 @@
+apply plugin: 'com.android.application'
+apply plugin: 'org.jetbrains.kotlin.android'
+
+// 고정 서명 키 — CI가 GitHub Secrets(KEYSTORE_BASE64)로 이 파일을 만들어 줍니다.
+// 파일이 없으면 기본 디버그 키로 서명됩니다(이 경우 기존 앱 위에 업데이트 설치 불가).
+def keystoreFile = file('mytube.jks')
+def hasFixedKey = keystoreFile.exists()
+
+android {
+    namespace 'com.mytube.app'
+    compileSdk rootProject.ext.compileSdkVersion
+
+    defaultConfig {
+        applicationId 'com.mytube.app'
+        minSdkVersion 24 // youtubedl-android 최소 요구 버전 (Android 7.0)
+        targetSdkVersion rootProject.ext.targetSdkVersion
+        versionCode((System.getenv('VERSION_CODE') ?: '1').toInteger()) // CI 실행 번호 → 매번 증가
+        versionName '1.1.0'
+    }
+
+    androidResources {
+        ignoreAssetsPattern '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
+    }
+
+    signingConfigs {
+        if (hasFixedKey) {
+            fixed {
+                storeFile keystoreFile
+                storePassword System.getenv('KEYSTORE_PASSWORD')
+                keyAlias 'mytube'
+                keyPassword System.getenv('KEYSTORE_PASSWORD')
+            }
+        }
+    }
+
+    buildTypes {
+        debug {
+            if (hasFixedKey) signingConfig signingConfigs.fixed
+        }
+        release {
+            minifyEnabled false
+            if (hasFixedKey) signingConfig signingConfigs.fixed
+        }
+    }
+
+    // CPU별 APK 분리 → 대부분의 폰은 arm64-v8a APK 하나만 설치하면 됨
+    splits {
+        abi {
+            enable true
+            reset()
+            include 'arm64-v8a', 'armeabi-v7a'
+            universalApk false
+        }
+    }
+
+    packaging {
+        jniLibs {
+            useLegacyPackaging = true // youtubedl-android 필수 (extractNativeLibs=true)
+        }
+    }
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21) // capacitor.build.gradle의 Java 21과 맞춤
+    }
+}
+
+dependencies {
+    def ytdlVersion = '0.17.4'
+
+    implementation project(':capacitor-android')
+    implementation project(':capacitor-cordova-android-plugins')
+    implementation "androidx.appcompat:appcompat:$androidxAppCompatVersion"
+    implementation "androidx.coordinatorlayout:coordinatorlayout:$androidxCoordinatorLayoutVersion"
+    implementation "androidx.core:core-splashscreen:$coreSplashScreenVersion"
+
+    implementation "io.github.junkfood02.youtubedl-android:library:$ytdlVersion"
+    implementation "io.github.junkfood02.youtubedl-android:ffmpeg:$ytdlVersion"
+}
+
+apply from: 'capacitor.build.gradle'

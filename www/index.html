@@ -3,306 +3,384 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>MyTube 모바일</title>
+  <title>MyTube</title>
   <style>
-    :root,
-    :root[data-theme="light"] {
-      --bg: #ffffff;
-      --header-bg: rgba(255, 255, 255, 0.96);
-      --surface: #f2f2f2;
-      --surface-hover: #e5e5e5;
-      --border: #e5e5e5;
-      --input-border: #cccccc;
-      --input-bg: #ffffff;
-      --player-bg: #f8f8f8;
-      --chip-active-bg: #0f0f0f;
-      --chip-active-text: #ffffff;
-      --text: #0f0f0f;
-      --muted: #606060;
-      --primary-bg: #0f0f0f;
-      --primary-text: #ffffff;
-      --red: #ff0000;
-      --green: #0d7a48;
+    /* ───────── 테마 ───────── */
+    :root, :root[data-theme="light"] {
+      --bg: #ffffff; --header-bg: rgba(255,255,255,0.96); --card: #f8f8f8;
+      --surface: #f2f2f2; --surface-hover: #e5e5e5; --border: #e5e5e5;
+      --input-border: #cccccc; --input-bg: #ffffff;
+      --text: #0f0f0f; --muted: #606060; --primary-bg: #0f0f0f; --primary-text: #ffffff;
+      --ok: #0d7a48; --error: #dc2626; --gold: #b45309; --bar: #10b981;
     }
     :root[data-theme="dark"] {
-      --bg: #0f0f0f;
-      --header-bg: rgba(15, 15, 15, 0.96);
-      --surface: #272727;
-      --surface-hover: #3f3f3f;
-      --border: #2c2c2c;
-      --input-border: #3a3a3a;
-      --input-bg: #141414;
-      --player-bg: #181818;
-      --chip-active-bg: #f1f1f1;
-      --chip-active-text: #0f0f0f;
-      --text: #f1f1f1;
-      --muted: #aaaaaa;
-      --primary-bg: #f1f1f1;
-      --primary-text: #0f0f0f;
-      --red: #ff0000;
-      --green: #34d399;
+      --bg: #0f0f0f; --header-bg: rgba(15,15,15,0.96); --card: #181818;
+      --surface: #272727; --surface-hover: #3f3f3f; --border: #2c2c2c;
+      --input-border: #3a3a3a; --input-bg: #141414;
+      --text: #f1f1f1; --muted: #aaaaaa; --primary-bg: #f1f1f1; --primary-text: #0f0f0f;
+      --ok: #34d399; --error: #f87171; --gold: #fbbf24; --bar: #10b981;
     }
+
+    /* ───────── 기본 ───────── */
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     body {
       background: var(--bg); color: var(--text);
       font-family: 'Roboto', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
-      padding: 68px 14px calc(28px + env(safe-area-inset-bottom));
+      padding: calc(68px + env(safe-area-inset-top)) 14px calc(28px + env(safe-area-inset-bottom));
     }
+    .container { max-width: 1120px; margin: 0 auto; }
+    .panel { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 12px; margin-bottom: 12px; }
+
     header {
-      position: fixed; top: 0; left: 0; right: 0; height: 56px;
-      background: var(--header-bg); backdrop-filter: blur(8px);
-      border-bottom: 1px solid var(--border);
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      height: calc(56px + env(safe-area-inset-top)); padding: env(safe-area-inset-top) 12px 0;
       display: flex; align-items: center; justify-content: space-between;
-      padding: 0 12px; z-index: 100;
+      background: var(--header-bg); backdrop-filter: blur(8px); border-bottom: 1px solid var(--border);
     }
     .brand { display: flex; align-items: center; gap: 6px; font-weight: 800; font-size: 18px; cursor: pointer; }
-    .yt-badge {
-      background: var(--red); color: #fff; width: 28px; height: 20px; border-radius: 6px;
+    .brand-badge {
+      background: #ff0000; color: #fff; width: 28px; height: 20px; border-radius: 6px;
       display: inline-flex; align-items: center; justify-content: center; font-size: 11px;
     }
+
+    /* ───────── 버튼 ───────── */
     .btn {
-      min-height: 36px; padding: 0 12px; border-radius: 18px; border: none;
-      background: var(--surface); color: var(--text);
-      font-size: 13px; font-weight: 600; cursor: pointer;
-      display: inline-flex; align-items: center; justify-content: center; gap: 5px;
+      min-height: 38px; padding: 0 12px; border-radius: 19px; border: none;
+      background: var(--surface); color: var(--text); font-size: 13px; font-weight: 600;
+      cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 5px;
     }
     .btn:hover:not(:disabled) { background: var(--surface-hover); }
     .btn:disabled { opacity: 0.45; cursor: not-allowed; }
     .btn.primary { background: var(--primary-bg); color: var(--primary-text); }
-    .container { max-width: 1120px; margin: 0 auto; }
-    .url-card, #player-box {
-      background: var(--player-bg); border: 1px solid var(--border);
-      border-radius: 14px; padding: 12px; margin-bottom: 12px;
-    }
-    .url-row { display: flex; gap: 8px; }
+    .btn.saved { background: rgba(245,158,11,0.2); color: var(--gold); }
+    .btn-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 8px; }
+    .btn-row.three { grid-template-columns: repeat(3, 1fr); }
+    @media (max-width: 520px) { .btn-row:not(.three) { grid-template-columns: repeat(2, 1fr); } }
+
+    /* ───────── 입력 / 탭 ───────── */
     .url-input {
-      flex: 1; height: 42px; padding: 0 14px; border-radius: 21px;
-      border: 1px solid var(--input-border); background: var(--input-bg);
-      color: var(--text); font-size: 14px; outline: none;
+      width: 100%; height: 42px; padding: 0 14px; border-radius: 21px;
+      border: 1px solid var(--input-border); background: var(--input-bg); color: var(--text);
+      font-size: 14px; outline: none;
     }
-    .quick-dl-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 8px; }
-    .dl-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
-    @media (max-width: 520px) { .quick-dl-row { grid-template-columns: repeat(2, 1fr); } }
+    .url-input:focus { border-color: #2563eb; }
     .chip-row { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 12px; }
     .chip-row::-webkit-scrollbar { height: 0; }
     .chip {
-      height: 34px; padding: 0 14px; border-radius: 17px; border: none;
-      background: var(--surface); color: var(--text); font-size: 13px; font-weight: 600;
-      cursor: pointer; white-space: nowrap;
+      height: 34px; padding: 0 14px; border-radius: 17px; border: none; white-space: nowrap;
+      background: var(--surface); color: var(--text); font-size: 13px; font-weight: 600; cursor: pointer;
     }
-    .chip.active { background: var(--chip-active-bg); color: var(--chip-active-text); }
-    #player-box { display: none; margin-bottom: 16px; }
-    .video-frame-wrap { position: relative; padding-bottom: 56.25%; height: 0; background: #000; border-radius: 10px; overflow: hidden; }
-    .video-frame-wrap iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
-    .now-title { font-size: 16px; font-weight: 700; margin-top: 10px; }
+    .chip.active { background: var(--primary-bg); color: var(--primary-text); }
+
+    /* ───────── 플레이어 ───────── */
+    #player { display: none; }
+    .frame { position: relative; aspect-ratio: 16 / 9; background: #000; border-radius: 10px; overflow: hidden; }
+    .frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+    .player-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-top: 10px; }
+    .now-title { font-size: 16px; font-weight: 700; word-break: break-word; }
     .now-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
-    .progress-panel {
-      display: none; margin-top: 10px; padding: 10px 12px;
-      border-radius: 10px; background: var(--input-bg); border: 1px solid var(--border); font-size: 12px;
-    }
-    .progress-track { width: 100%; height: 8px; border-radius: 4px; background: var(--surface); overflow: hidden; margin-top: 6px; }
-    .progress-fill { width: 0%; height: 100%; background: #10b981; transition: width 0.2s ease; }
+
+    .progress { display: none; margin-top: 10px; padding: 10px 12px; border-radius: 10px;
+      background: var(--input-bg); border: 1px solid var(--border); font-size: 12px; }
+    .progress-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+    .progress-head .btn { min-height: 28px; font-size: 12px; }
+    .progress-track { height: 8px; border-radius: 4px; background: var(--surface); overflow: hidden; margin-top: 6px; }
+    .progress-fill { width: 0%; height: 100%; background: var(--bar); transition: width 0.2s ease; }
+    .progress.error #progress-text { color: var(--error); }
+    .progress.error .progress-fill { background: var(--error); }
+    .progress.done #progress-text { color: var(--ok); }
+    .progress.done .progress-fill { background: var(--ok); }
+
+    /* ───────── 목록 ───────── */
     .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
-    .card { background: var(--player-bg); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; cursor: pointer; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; cursor: pointer; }
     .thumb { position: relative; aspect-ratio: 16 / 9; background: #000; }
     .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
-    .dur {
-      position: absolute; right: 8px; bottom: 8px; background: rgba(0,0,0,0.82);
-      color: #fff; font-size: 11px; padding: 2px 6px; border-radius: 4px; font-weight: 600;
-    }
+    .badge { position: absolute; right: 8px; bottom: 8px; background: rgba(0,0,0,0.82); color: #fff;
+      font-size: 11px; padding: 2px 6px; border-radius: 4px; font-weight: 600; }
+    .badge.live { background: #cc0000; }
     .card-body { padding: 10px 12px; }
-    .card-title { font-size: 14px; font-weight: 600; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .card-title { font-size: 14px; font-weight: 600; display: -webkit-box; -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical; overflow: hidden; }
     .card-meta { font-size: 12px; color: var(--muted); margin-top: 4px; }
+    .empty { color: var(--muted); padding: 28px 0; }
   </style>
 </head>
 <body>
   <header>
-    <div class="brand" onclick="renderFeed('all')">
-      <span class="yt-badge">▶</span>
-      <span>MyTube</span>
-    </div>
-    <div style="display:flex;gap:6px;">
-      <button class="btn" id="theme-btn" onclick="toggleTheme()">🌙 다크</button>
-      <button class="btn" id="bm-filter-btn" onclick="renderFeed('bookmarks')">⭐ 저장함 (0)</button>
-    </div>
+    <div class="brand" data-action="home"><span class="brand-badge">▶</span><span>MyTube</span></div>
+    <button class="btn" id="theme-btn" data-action="theme"></button>
   </header>
 
-  <div class="container">
-    <div class="url-card">
-      <div class="url-row">
-        <input type="url" id="url-input" class="url-input" placeholder="유튜브 영상 URL 붙여넣기 (예: https://youtu.be/...)" />
-        <button class="btn primary" onclick="openFromUrl('play')">재생</button>
+  <main class="container">
+    <section class="panel">
+      <input type="url" id="url-input" class="url-input" placeholder="유튜브 영상 URL 붙여넣기 (예: https://youtu.be/...)" />
+      <div class="btn-row">
+        <button class="btn primary" data-action="open-url" data-format="play">▶ 재생</button>
+        <button class="btn dl-btn" data-action="open-url" data-format="mp3">🎵 MP3</button>
+        <button class="btn dl-btn" data-action="open-url" data-format="wav">🎼 WAV</button>
+        <button class="btn dl-btn" data-action="open-url" data-format="mp4">🎬 MP4</button>
       </div>
-      <div class="quick-dl-row">
-        <button class="btn" onclick="openFromUrl('play')">▶ 바로 재생</button>
-        <button class="btn" onclick="openFromUrl('mp3')">🎵 MP3 저장</button>
-        <button class="btn" onclick="openFromUrl('wav')">🎼 WAV 저장</button>
-        <button class="btn" onclick="openFromUrl('mp4')">🎬 MP4 저장</button>
-      </div>
-    </div>
+    </section>
 
-    <div class="chip-row" id="category-chips"></div>
-
-    <section id="player-box">
-      <div class="video-frame-wrap">
-        <iframe id="yt-iframe" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
+    <section class="panel" id="player">
+      <div class="frame">
+        <iframe id="yt-iframe" referrerpolicy="strict-origin-when-cross-origin"
+                allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
       </div>
-      <div class="now-title" id="now-title"></div>
-      <div class="now-sub" id="now-sub"></div>
-      <div class="dl-grid">
-        <button class="btn dl-btn" onclick="startDownload('mp3')">🎵 MP3 저장</button>
-        <button class="btn dl-btn" onclick="startDownload('wav')">🎼 WAV 저장</button>
-        <button class="btn dl-btn" onclick="startDownload('mp4')">🎬 MP4 저장</button>
+      <div class="player-head">
+        <div>
+          <div class="now-title" id="now-title"></div>
+          <div class="now-sub" id="now-sub"></div>
+        </div>
+        <button class="btn" id="bookmark-btn" data-action="bookmark"></button>
       </div>
-      <div class="progress-panel" id="progress-panel">
-        <div id="progress-text">다운로드 준비 중...</div>
+      <div class="btn-row three">
+        <button class="btn dl-btn" data-action="download" data-format="mp3">🎵 MP3 저장</button>
+        <button class="btn dl-btn" data-action="download" data-format="wav">🎼 WAV 저장</button>
+        <button class="btn dl-btn" data-action="download" data-format="mp4">🎬 MP4 저장</button>
+      </div>
+      <div class="progress" id="progress">
+        <div class="progress-head">
+          <span id="progress-text"></span>
+          <button class="btn" id="cancel-btn" data-action="cancel">취소</button>
+        </div>
         <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
       </div>
     </section>
 
-    <div class="grid" id="video-grid"></div>
-  </div>
+    <nav class="chip-row" id="tabs"></nav>
+    <section class="grid" id="video-grid"></section>
+  </main>
 
   <script>
+  (() => {
+    "use strict";
+
+    /* ═════════ 1. 설정 · 상태 ═════════ */
+    // 추천 목록: { id: 영상 ID(11자), title, channel, dur(재생시간 또는 "LIVE") } 형식으로 추가하세요.
     const CATEGORIES = {
       "음악": [
-        { id: "jfKfPfyJRdk", title: "lofi hip hop radio - beats to relax/study to", channel: "Lofi Girl", dur: "LIVE" },
-        { id: "5qap5aO4i9A", title: "Acoustic Guitar & Piano Chill Session", channel: "Aul_70 Studio", dur: "18:24" }
-      ],
-      "음식 만들기": [
-        { id: "dQw4w9WgXcQ", title: "10분 초간단 자취 요리 레시피 모음", channel: "1분요리 뚝딱이형", dur: "11:05" }
-      ],
-      "뉴스": [
-        { id: "M7lc1UVf-VE", title: "오늘의 주요 경제·산업 브리핑", channel: "MBCNEWS", dur: "06:40" }
+        { id: "jfKfPfyJRdk", title: "lofi hip hop radio - beats to relax/study to", channel: "Lofi Girl", dur: "LIVE" }
       ]
     };
+    const TAB_RECENT = "recent";
+    const TAB_BOOKMARKS = "bookmarks";
+    const STORE = { bookmarks: "mytube_bookmarks", recent: "mytube_recent", theme: "mytube_theme" };
+    const RECENT_MAX = 30;
 
-    let currentTab = "all";
-    let activeVideo = null;
-    const bookmarks = JSON.parse(localStorage.getItem("mytube_mob_bm") || "[]");
-    let theme = localStorage.getItem("mytube_mob_theme") || "light";
+    const Downloader = window.Capacitor?.Plugins?.MediaDownloader ?? null;
+    const $ = id => document.getElementById(id);
 
-    function applyTheme(next) {
-      theme = next;
-      document.documentElement.setAttribute("data-theme", theme);
-      localStorage.setItem("mytube_mob_theme", theme);
-      document.getElementById("theme-btn").textContent = theme === "dark" ? "☀️ 라이트" : "🌙 다크";
+    const state = {
+      tab: "all",
+      active: null,
+      downloading: false,
+      theme: load(STORE.theme, "light"),
+      bookmarks: load(STORE.bookmarks, []),
+      recent: load(STORE.recent, [])
+    };
+
+    /* ═════════ 2. 유틸 ═════════ */
+    function load(key, fallback) {
+      try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }
+      catch { return fallback; }
     }
-    function toggleTheme() { applyTheme(theme === "dark" ? "light" : "dark"); }
-    applyTheme(theme);
-
+    function save(key, value) {
+      try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* 저장 공간 부족 등은 무시 */ }
+    }
+    function escapeHtml(s) {
+      return String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    }
     function extractVideoId(input) {
       const s = (input || "").trim();
       if (/^[\w-]{11}$/.test(s)) return s;
       const m = s.match(/(?:v=|\/v\/|\/embed\/|\/shorts\/|\/live\/|youtu\.be\/)([\w-]{11})/);
       return m ? m[1] : "";
     }
+    const isLive = video => video?.dur === "LIVE";
 
-    function updateBookmarkLabel() {
-      document.getElementById("bm-filter-btn").textContent = `⭐ 저장함 (${bookmarks.length})`;
+    /* ═════════ 3. 테마 ═════════ */
+    function applyTheme(theme) {
+      state.theme = theme;
+      document.documentElement.dataset.theme = theme;
+      $("theme-btn").textContent = theme === "dark" ? "☀️ 라이트" : "🌙 다크";
+      save(STORE.theme, theme);
     }
 
-    function renderChips() {
-      const tabs = ["all", ...Object.keys(CATEGORIES)];
-      document.getElementById("category-chips").innerHTML = tabs.map(t => `
-        <button class="chip ${currentTab === t ? "active" : ""}" onclick="renderFeed('${t}')">
-          ${t === "all" ? "전체" : t}
-        </button>
-      `).join("");
+    /* ═════════ 4. 목록 렌더링 ═════════ */
+    let currentList = [];
+
+    function listFor(tab) {
+      if (tab === TAB_BOOKMARKS) return state.bookmarks;
+      if (tab === TAB_RECENT) return state.recent;
+      if (tab === "all") return Object.values(CATEGORIES).flat();
+      return CATEGORIES[tab] || [];
     }
 
-    function renderFeed(tab) {
-      currentTab = tab;
-      renderChips();
-      updateBookmarkLabel();
-
-      const list = tab === "bookmarks" ? bookmarks : (tab === "all" ? Object.values(CATEGORIES).flat() : (CATEGORIES[tab] || []));
-      const grid = document.getElementById("video-grid");
-      if (!list.length) {
-        grid.innerHTML = `<div style="color:var(--muted);padding:28px 0;">표시할 항목이 없습니다. 상단에 URL을 붙여넣어 보세요.</div>`;
-        return;
-      }
-      grid.innerHTML = list.map(v => `
-        <div class="card" onclick='selectVideo(${JSON.stringify(v)})'>
-          <div class="thumb">
-            <img src="https://i.ytimg.com/vi/${v.id}/hqdefault.jpg" alt="" />
-            ${v.dur ? `<span class="dur">${v.dur}</span>` : ""}
-          </div>
-          <div class="card-body">
-            <div class="card-title">${v.title}</div>
-            <div class="card-meta">${v.channel}</div>
-          </div>
-        </div>
-      `).join("");
+    function renderTabs() {
+      const tabs = [
+        ["all", "전체"],
+        ...Object.keys(CATEGORIES).map(name => [name, name]),
+        [TAB_RECENT, "🕘 최근 본 영상"],
+        [TAB_BOOKMARKS, `⭐ 저장함 (${state.bookmarks.length})`]
+      ];
+      $("tabs").innerHTML = tabs.map(([key, label]) =>
+        `<button class="chip ${state.tab === key ? "active" : ""}" data-action="tab" data-tab="${escapeHtml(key)}">${escapeHtml(label)}</button>`
+      ).join("");
     }
 
+    function renderFeed(tab = state.tab) {
+      state.tab = tab;
+      renderTabs();
+      currentList = listFor(tab);
+      $("video-grid").innerHTML = currentList.length
+        ? currentList.map((v, i) => `
+            <div class="card" data-action="select" data-index="${i}">
+              <div class="thumb">
+                <img src="https://i.ytimg.com/vi/${escapeHtml(v.id)}/hqdefault.jpg" alt="" loading="lazy" />
+                ${v.dur ? `<span class="badge ${isLive(v) ? "live" : ""}">${escapeHtml(v.dur)}</span>` : ""}
+              </div>
+              <div class="card-body">
+                <div class="card-title">${escapeHtml(v.title)}</div>
+                <div class="card-meta">${escapeHtml(v.channel)}</div>
+              </div>
+            </div>`).join("")
+        : `<div class="empty">표시할 항목이 없습니다. 위에 유튜브 URL을 붙여넣어 보세요.</div>`;
+    }
+
+    /* ═════════ 5. 플레이어 · 저장함 ═════════ */
     function selectVideo(video) {
-      activeVideo = video;
-      document.getElementById("player-box").style.display = "block";
-      document.getElementById("yt-iframe").src = `https://www.youtube-nocookie.com/embed/${video.id}?autoplay=1&rel=0`;
-      document.getElementById("now-title").textContent = video.title;
-      document.getElementById("now-sub").textContent = `${video.channel} · ${video.id}`;
-      document.getElementById("progress-panel").style.display = "none";
+      state.active = video;
+      $("player").style.display = "block";
+      $("yt-iframe").src = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(video.id)}?autoplay=1&rel=0`;
+      $("now-title").textContent = video.title;
+      $("now-sub").textContent = `${video.channel} · ${video.id}`;
+      if (!state.downloading) $("progress").style.display = "none";
+      addRecent(video);
+      updateBookmarkButton();
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
-    async function openFromUrl(action) {
-      const vid = extractVideoId(document.getElementById("url-input").value);
-      if (!vid) {
-        alert("유효한 유튜브 영상 URL을 입력해 주세요.");
-        return;
-      }
-      selectVideo({ id: vid, title: `YouTube 영상 (${vid})`, channel: "URL 직접 열기", dur: "" });
-      if (action !== "play") await startDownload(action);
+    function addRecent(video) {
+      state.recent = [video, ...state.recent.filter(v => v.id !== video.id)].slice(0, RECENT_MAX);
+      save(STORE.recent, state.recent);
+      if (state.tab === TAB_RECENT) renderFeed();
     }
 
-    function updateProgressUI(percent, message, isError = false, isDone = false) {
-      const panel = document.getElementById("progress-panel");
-      const textEl = document.getElementById("progress-text");
-      const fillEl = document.getElementById("progress-fill");
+    function updateVideoInfo(id, patch) {
+      const apply = list => list.forEach(v => { if (v.id === id) Object.assign(v, patch); });
+      apply(state.recent); apply(state.bookmarks);
+      save(STORE.recent, state.recent); save(STORE.bookmarks, state.bookmarks);
+      if (state.active?.id === id) {
+        Object.assign(state.active, patch);
+        $("now-title").textContent = state.active.title;
+        $("now-sub").textContent = `${state.active.channel} · ${id}`;
+      }
+      renderFeed();
+    }
+
+    function updateBookmarkButton() {
+      const saved = !!state.active && state.bookmarks.some(b => b.id === state.active.id);
+      const btn = $("bookmark-btn");
+      btn.classList.toggle("saved", saved);
+      btn.textContent = saved ? "★ 저장됨" : "☆ 저장";
+    }
+
+    function toggleBookmark() {
+      const v = state.active;
+      if (!v) return;
+      const exists = state.bookmarks.some(b => b.id === v.id);
+      state.bookmarks = exists ? state.bookmarks.filter(b => b.id !== v.id) : [{ ...v }, ...state.bookmarks];
+      save(STORE.bookmarks, state.bookmarks);
+      updateBookmarkButton();
+      renderFeed();
+    }
+
+    // URL로 연 영상의 실제 제목·채널명 가져오기 (실패해도 그대로 사용)
+    async function fetchTitle(id) {
+      try {
+        const url = `https://www.youtube.com/oembed?format=json&url=${encodeURIComponent("https://www.youtube.com/watch?v=" + id)}`;
+        const res = await fetch(url);
+        if (!res.ok) return;
+        const info = await res.json();
+        updateVideoInfo(id, { title: info.title, channel: info.author_name });
+      } catch { /* 네트워크 오류 무시 */ }
+    }
+
+    async function openFromUrl(format) {
+      const id = extractVideoId($("url-input").value);
+      if (!id) { alert("유효한 유튜브 영상 URL을 입력해 주세요."); return; }
+      const known = [...listFor("all"), ...state.recent, ...state.bookmarks].find(v => v.id === id);
+      selectVideo(known ? { ...known } : { id, title: `YouTube 영상 (${id})`, channel: "URL로 열기", dur: "" });
+      if (!known) fetchTitle(id);
+      if (format !== "play") await startDownload(format);
+    }
+
+    /* ═════════ 6. 다운로드 ═════════ */
+    function showProgress(percent, message, status = "") {
+      const panel = $("progress");
       panel.style.display = "block";
-      const safePct = Math.max(0, Math.min(100, Number(percent) || 0));
-      fillEl.style.width = `${safePct}%`;
-      fillEl.style.background = isError ? "#ef4444" : (isDone ? "#0d7a48" : "#10b981");
-      textEl.style.color = isError ? "#ef4444" : (isDone ? "var(--green)" : "var(--text)");
-      textEl.textContent = message;
+      panel.classList.toggle("error", status === "error");
+      panel.classList.toggle("done", status === "done");
+      $("progress-fill").style.width = `${Math.max(0, Math.min(100, Number(percent) || 0))}%`;
+      $("progress-text").textContent = message;
+    }
+
+    function setDownloading(on) {
+      state.downloading = on;
+      document.querySelectorAll(".dl-btn").forEach(b => (b.disabled = on));
+      $("cancel-btn").style.display = on ? "" : "none";
     }
 
     async function startDownload(format) {
-      if (!activeVideo) return;
-      const plugin = window.Capacitor?.Plugins?.MediaDownloader;
-      const btns = document.querySelectorAll(".dl-btn");
-      btns.forEach(b => (b.disabled = true));
-      updateProgressUI(5, `[${format.toUpperCase()}] 다운로드 엔진 준비 중...`);
+      const video = state.active;
+      if (!video || state.downloading) return;
+      if (!Downloader) { showProgress(0, "안드로이드 앱에서만 저장할 수 있습니다.", "error"); return; }
+      if (isLive(video)) { showProgress(0, "라이브 방송은 저장할 수 없습니다.", "error"); return; }
 
-      if (!plugin) {
-        updateProgressUI(0, "안드로이드 앱(Capacitor) 환경에서만 네이티브 저장이 실행됩니다.", true);
-        btns.forEach(b => (b.disabled = false));
-        return;
-      }
-
+      setDownloading(true);
+      showProgress(1, `[${format.toUpperCase()}] 다운로드 준비 중...`);
       try {
-        const res = await plugin.download({
-          url: `https://www.youtube.com/watch?v=${activeVideo.id}`,
-          format
-        });
-        updateProgressUI(100, `저장 완료: ${res.folder}`, false, true);
+        const res = await Downloader.download({ url: `https://www.youtube.com/watch?v=${video.id}`, format });
+        showProgress(100, `저장 완료: ${res.folder}/${res.fileName}`, "done");
       } catch (err) {
-        updateProgressUI(0, `저장 실패: ${err.message || err}`, true);
+        const canceled = err?.code === "CANCELED";
+        showProgress(0, canceled ? "다운로드를 취소했습니다." : (err?.message || String(err)), canceled ? "" : "error");
       } finally {
-        btns.forEach(b => (b.disabled = false));
+        setDownloading(false);
       }
     }
 
-    if (window.Capacitor?.Plugins?.MediaDownloader) {
-      window.Capacitor.Plugins.MediaDownloader.addListener("downloadProgress", event => {
-        const pct = Number(event.progress) || 0;
-        updateProgressUI(pct, `${event.stage || "처리 중..."} (${pct.toFixed(1)}%)`);
-      });
-    }
+    Downloader?.addListener("downloadProgress", e => {
+      if (!state.downloading) return;
+      const pct = Number(e.progress) || 0;
+      showProgress(pct, `${e.stage || "처리 중..."} (${pct.toFixed(1)}%)`);
+    });
 
-    updateBookmarkLabel();
+    /* ═════════ 7. 이벤트 연결 ═════════ */
+    const actions = {
+      home: () => renderFeed("all"),
+      theme: () => applyTheme(state.theme === "dark" ? "light" : "dark"),
+      tab: el => renderFeed(el.dataset.tab),
+      select: el => { const v = currentList[Number(el.dataset.index)]; if (v) selectVideo({ ...v }); },
+      bookmark: toggleBookmark,
+      "open-url": el => openFromUrl(el.dataset.format),
+      download: el => startDownload(el.dataset.format),
+      cancel: () => Downloader?.cancel()
+    };
+
+    document.addEventListener("click", e => {
+      const el = e.target.closest("[data-action]");
+      if (el && !el.disabled) actions[el.dataset.action]?.(el);
+    });
+    $("url-input").addEventListener("keydown", e => { if (e.key === "Enter") openFromUrl("play"); });
+
+    /* ═════════ 8. 시작 ═════════ */
+    applyTheme(state.theme);
+    setDownloading(false);
     renderFeed("all");
+  })();
   </script>
 </body>
 </html>

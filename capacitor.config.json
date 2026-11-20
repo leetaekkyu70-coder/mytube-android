@@ -1,8 +1,5 @@
 {
   "appId": "com.mytube.app",
   "appName": "MyTube",
-  "webDir": "www",
-  "server": {
-    "androidScheme": "https"
-  }
+  "webDir": "www"
 }
